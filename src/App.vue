@@ -4,9 +4,9 @@
       <v-list-item>
         <v-list-item-content>
           <v-list-item-title class="title">
-            <v-list-tile-action>
+            <v-list-item-action>
               <v-icon large>home</v-icon>
-            </v-list-tile-action>
+            </v-list-item-action>
             Inicio
           </v-list-item-title>
         </v-list-item-content>
