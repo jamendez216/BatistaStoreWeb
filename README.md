@@ -1,4 +1,5 @@
-# netcorevuejs
+# BatistaStoreWEb
+Front end of the system, made with Vue.js using Vuetify 
 
 ## Project setup
 ```
