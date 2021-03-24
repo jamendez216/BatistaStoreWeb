@@ -1,114 +1,126 @@
 <template>
   <v-layout align-start>
     <v-flex>
-        <v-data-table
-          :headers="headers"
-          :items="categorias"
-          :search="search"
-          sort-by="calories"
-          class="elevation-1"
-          fixed-header
-        >
-          <template v-slot:top>
-            <v-toolbar flat>
-              <v-toolbar-title
-                ><strong>Lista de Categorías</strong></v-toolbar-title
-              >
-              <v-spacer></v-spacer>
-              <v-spacer></v-spacer>
-              <v-spacer></v-spacer>
-              <v-text-field
-                v-model="search"
-                append-icon="search"
-                label="Search"
-                single-line
-                hide-details
-              ></v-text-field>
-              <v-spacer></v-spacer>
-              <v-dialog v-model="dialog" max-width="650px">
-                <template v-slot:activator="{ on, attrs }">
-                  <v-btn
-                    color="primary"
-                    dark
-                    class="mb-2"
-                    v-bind="attrs"
-                    v-on="on"
-                  >
-                    New Item
+      <v-data-table
+        :headers="headers"
+        :items="categorias"
+        :search="search"
+        sort-by="calories"
+        class="elevation-1"
+        fixed-header
+      >
+        <template v-slot:top>
+          <v-toolbar flat>
+            <v-toolbar-title
+              ><strong>Lista de Categorías</strong></v-toolbar-title
+            >
+            <v-spacer></v-spacer>
+            <v-spacer></v-spacer>
+            <v-spacer></v-spacer>
+            <v-text-field
+              v-model="search"
+              append-icon="search"
+              label="Search"
+              single-line
+              hide-details
+            ></v-text-field>
+            <v-spacer></v-spacer>
+            <v-dialog v-model="dialog" max-width="650px">
+              <template v-slot:activator="{ on, attrs }">
+                <v-btn
+                  color="primary"
+                  dark
+                  class="mb-2"
+                  v-bind="attrs"
+                  v-on="on"
+                >
+                  New Item
+                </v-btn>
+              </template>
+              <v-card>
+                <v-card-title>
+                  <span class="headline">{{ formTitle }}</span>
+                </v-card-title>
+                <v-form ref="form" v-model="valid" lazy-validation>
+                  <v-card-text>
+                    <v-container>
+                      <v-row>
+                        <v-col cols="12" sm="12" md="12">
+                          <v-text-field
+                            v-model="nombre"
+                            label="Name"
+                            :counter="50"
+                            :rules="nameRules"
+                            required
+                          ></v-text-field>
+                        </v-col>
+                        <v-col cols="12" sm="12" md="12">
+                          <v-text-field
+                            v-model="descripcion"
+                            label="Description"
+                          ></v-text-field>
+                        </v-col>
+                      </v-row>
+                    </v-container>
+                  </v-card-text>
+                </v-form>
+                <v-card-actions>
+                  <v-spacer></v-spacer>
+                  <v-btn color="blue darken-1" text @click="close">
+                    Cancel
                   </v-btn>
-                </template>
-                <v-card>
-                  <v-card-title>
-                    <span class="headline">{{ formTitle }}</span>
-                  </v-card-title>
-                  <v-form
-                    ref="form"
-                    v-model="valid"
-                    lazy-validation
-                  >
-                    <v-card-text>
-                      <v-container>
-                        <v-row>
-                          <v-col cols="12" sm="12" md="12">
-                            <v-text-field
-                              v-model="nombre"
-                              label="Name"
-                              :counter="50"
-                              :rules="nameRules"
-                              required
-                            ></v-text-field>
-                          </v-col>
-                          <v-col cols="12" sm="12" md="12">
-                            <v-text-field
-                              v-model="descripcion"
-                              label="Description"
-                            ></v-text-field>
-                          </v-col>
-                        </v-row>
-                      </v-container>
-                    </v-card-text>
-                  </v-form>
-                  <v-card-actions>
-                    <v-spacer></v-spacer>
-                    <v-btn color="blue darken-1" text @click="close">
-                      Cancel
-                    </v-btn>
-                    <v-btn color="blue darken-1" text @click="save"> Save </v-btn>
-                  </v-card-actions>
-                </v-card>
-              </v-dialog>
-              <v-dialog v-model="dialogDelete" max-width="400px">
-                <v-card>
-                  <v-card-title class="headline"
-                    >Seguro de que quieres eliminar?</v-card-title
-                  >
-                  <v-card-actions>
-                    <v-spacer></v-spacer>
-                    <v-btn color="blue darken-1" text @click="closeDelete"
-                      >Cancel</v-btn
-                    >
-                    <v-btn color="blue darken-1" text @click="deleteItemConfirm"
-                      >OK</v-btn
-                    >
-                    <v-spacer></v-spacer>
-                  </v-card-actions>
-                </v-card>
-              </v-dialog>
-            </v-toolbar>
-          </template>
+                  <v-btn color="blue darken-1" text @click="save"> Save </v-btn>
+                </v-card-actions>
+              </v-card>
+            </v-dialog>
+            <v-dialog v-model="adModal" max-width="250px">
+              <v-card>
+                <v-card-title class="headline" v-if="adAccion == 1"
+                  >Activate Item?</v-card-title
+                >
+                <v-card-title class="headline" v-if="adAccion == 2"
+                  >Deactivate Item?</v-card-title
+                >
 
-          <template v-slot:[`item.actions`]="{ item }">
-            <v-icon small class="mr-2" @click="editItem(item)"> edit </v-icon>
-            <v-icon small @click="deleteItem(item)"> delete </v-icon>
-          </template>
+                <v-card-text>
+                  You are
+                  <span v-if="adAccion == 1"> Activating</span>
+                  <span v-if="adAccion == 2"> Deactivating</span>
+                  {{ adNombre }}
+                </v-card-text>
+                <v-card-actions>
+                  <v-spacer></v-spacer>
+                  <v-btn color="blue darken-1" text @click="close"
+                    >Cancel</v-btn
+                  >
+                  <v-btn color="blue darken-1" text @click="deleteItemConfirm"
+                    >OK</v-btn
+                  >
+                  <v-spacer></v-spacer>
+                </v-card-actions>
+              </v-card>
+            </v-dialog>
+          </v-toolbar>
+        </template>
 
-          <template v-slot:[`item.condicion`]="{ item }">
-            <v-simple-checkbox
-              v-model="item.condicion"
-              disabled
-            ></v-simple-checkbox>
+        <template v-slot:[`item.actions`]="{ item }">
+          <v-icon small class="mr-2" @click="editItem(item)"> edit </v-icon>
+
+          <template v-if="item.condicion">
+            <v-icon small @click="ToggleStatus(2, item)"> dangerous </v-icon>
           </template>
-        </v-data-table>
+          <template v-else>
+            <v-icon small @click="ToggleStatus(1, item)"> check </v-icon>
+          </template>
+        </template>
+
+        <template v-slot:[`item.condicion`]="{ item }">
+          <v-simple-checkbox
+            v-model="item.condicion"
+            disabled
+          ></v-simple-checkbox>
+        </template>
+      </v-data-table>
     </v-flex>
   </v-layout>
 </template>
@@ -135,11 +147,6 @@ export default {
       { text: "Actions", value: "actions", sortable: false },
     ],
     editedIndex: -1,
-    editedItem: {
-      name: "",
-      descripcion: "",
-      Status: "",
-    },
     id: "",
     nombre: "",
     descripcion: "",
@@ -148,6 +155,10 @@ export default {
       (v) => v.length <= 50 || "Name must be less than 50 characters",
       (v) => v.length >= 3 || "Name must contain at least 3 characters",
     ],
+    adModal: 0,
+    adNombre: "",
+    adID: "",
+    adAccion: "",
   }),
 
   computed: {
@@ -161,7 +172,7 @@ export default {
       val || this.close();
     },
     dialogDelete(val) {
-      val || this.closeDelete();
+      this.adModal = 0;
     },
   },
 
@@ -196,31 +207,49 @@ export default {
       this.dialog = true;
     },
 
-    deleteItem(item) {
-      this.editedIndex = this.categorias.indexOf(item);
-      this.editedItem = Object.assign({}, item);
+    ToggleStatus(accion, item) {
+      this.adModal = 1;
+      this.adNombre = item.nombre;
+      this.adID = item.categoriaID;
       this.dialogDelete = true;
+      if (accion === 1) {
+        this.adAccion = 1;
+      } else if (accion === 2) {
+        this.adAccion = 2;
+      } else {
+        this.adModal = 0;
+      }
     },
 
     deleteItemConfirm() {
-      this.desserts.splice(this.editedIndex, 1);
-      this.closeDelete();
+      let me = this;
+      axios
+        .post("Categorias/ToggleActivation/" + this.adID, {})
+        .then(function (res) {
+          me.adModal = 0;
+          me.adAccion = 0;
+          me.adNombre = "";
+          me.adID = "";
+          me.listar();
+        })
+        .catch(function (err) {
+          console.log(err);
+        });
     },
 
     closeDelete() {
       this.dialogDelete = false;
-      this.$nextTick(() => {
-        this.editedItem = Object.assign({}, this.defaultItem);
-        this.editedIndex = -1;
-      });
+      this.limpiar();
     },
     limpiar() {
       this.id = "";
       this.nombre = "";
       this.descripcion = "";
+      this.editedIndex = -1;
     },
     close() {
       this.limpiar();
+      this.adModal = 0;
       this.dialog = false;
     },
     save() {
