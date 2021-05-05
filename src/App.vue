@@ -106,7 +106,7 @@ export default {
           action: "storefront",
           submenu: [
             { title: "Categorías", action: "categorias" },
-            { title: "Productos", action: "productos" },
+            { title: "Productos", action: "articulos" },
           ],
           title: "Almacén",
         },

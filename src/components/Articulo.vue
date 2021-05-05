@@ -3,19 +3,16 @@
     <v-flex>
       <v-data-table
         :headers="headers"
-        :items="categorias"
+        :items="articulos"
         :search="search"
         sort-by="calories"
         class="elevation-1"
         fixed-header
-        style="overflow: auto; max-height: 700px;"
-        loading="this.loading"
-        loading-text="Loading... Please wait"
       >
         <template v-slot:top>
           <v-toolbar flat>
             <v-toolbar-title
-              ><strong>Lista de Categorías</strong></v-toolbar-title
+              ><strong>Product List</strong></v-toolbar-title
             >
             <v-spacer></v-spacer>
             <v-spacer></v-spacer>
@@ -48,6 +45,20 @@
                   <v-card-text>
                     <v-container>
                       <v-row>
+                        <v-col cols="4" sm="4" md="4">
+                          <v-text-field
+                            v-model="codigo"
+                            label="Code"
+                            :counter="50"
+                            required
+                          ></v-text-field>
+                        </v-col>
+                        <v-col cols="8" sm="8" md="8">
+                          <v-select v-model="idcategoria"
+                          :items="categorias" label="Category">
+                          </v-select>
+                        </v-col>
+                        
                         <v-col cols="12" sm="12" md="12">
                           <v-text-field
                             v-model="nombre"
@@ -57,10 +68,19 @@
                             required
                           ></v-text-field>
                         </v-col>
-                        <v-col cols="12" sm="12" md="12">
+                        
+                        <v-col cols="5" sm="5" md="5">
                           <v-text-field
-                            v-model="descripcion"
-                            label="Description"
+                            type="number"
+                            v-model="stock"
+                            label="Stock"
+                          ></v-text-field>
+                        </v-col>
+                       <v-col cols="5" sm="5" md="5">
+                          <v-text-field
+                            type="number"
+                            v-model="precio_venta"
+                            label="Unit Price"
                           ></v-text-field>
                         </v-col>
                       </v-row>
@@ -103,6 +123,7 @@
                 </v-card-actions>
               </v-card>
             </v-dialog>
+            
           </v-toolbar>
         </template>
 
@@ -132,21 +153,32 @@
 import axios from "axios";
 export default {
   data: () => ({
-    categorias: [],
+    articulos: [],
     search: "",
     valid: true,
     loading: true,
     dialog: false,
     dialogDelete: false,
     headers: [
-      { text: "Name", align: "start", sortable: true, value: "nombre",},
-      { text: "Description", value: "descripcion", sortable: false },
+      { text: "Code", value: "codigo" , sortable: false },
+      { text: "Name", value: "nombre" , sortable: true },
+      { text: "Category", value: "categoria" , sortable: true },
+      { text: "Stock", value: "stock" , sortable: false},
+      { text: "Unit Price", value: "precio_venta" , sortable: false},
       { text: "Status", value: "condicion" },
       { text: "Actions", value: "actions", sortable: false },
     ],
     editedIndex: -1,
     id: "",
+    idcategoria:'',
+    categorias:[
+      {text: 'categoria 1', value: 1},
+      {text: 'categoria 2', value: 2}
+    ],
+    codigo: '',
     nombre: "",
+    stock: 0,
+    precio_venta:0,
     descripcion: "",
     nameRules: [
       (v) => !!v || "Name is required",
@@ -161,7 +193,7 @@ export default {
 
   computed: {
     formTitle() {
-      return this.editedIndex === -1 ? "Crear Categoría" : "Editar Categoría";
+      return this.editedIndex === -1 ? "Create Product" : "Edit Product";
     },
   },
 
@@ -182,29 +214,27 @@ export default {
   methods: {
     listar() {
       let me = this;
-      console.log(this.loading);
+      me.loading = true;
       axios
-        .get("Categorias/Get")
-        .then(function(response) {
-          me.categorias = response.data;
-          this.cancelLoading();
-          console.log(this.loading);
+        .get("Articulos/Get")
+        .then(function (response) {
+          me.articulos = response.data;
+          me.loading = false;
+          //console.log(response);
         })
-        .catch(function(error) {
+        .catch(function (error) {
           console.log(error);
         });
-    },
-
-    cancelLoading() {
-      this.loading = false;
     },
 
     initialize() {},
 
     editItem(item) {
-      this.id = item.categoriaID;
+      this.codigo = item.codigo;
+      this.idcategoria = item.idcategoria;
       this.nombre = item.nombre;
-      this.descripcion = item.descripcion;
+      this.stock = item.stock;
+      this.precio_venta = item.precio_venta;
       this.editedIndex = 1;
       this.dialog = true;
     },
@@ -227,14 +257,14 @@ export default {
       let me = this;
       axios
         .post("Categorias/ToggleActivation/" + this.adID, {})
-        .then(function(res) {
+        .then(function (res) {
           me.adModal = 0;
           me.adAccion = 0;
           me.adNombre = "";
           me.adID = "";
           me.listar();
         })
-        .catch(function(err) {
+        .catch(function (err) {
           console.log(err);
         });
     },
@@ -244,8 +274,11 @@ export default {
       this.limpiar();
     },
     limpiar() {
-      this.id = "";
+      this.codigo = "";
+      this.idcategoria = "";
       this.nombre = "";
+      this.precio_venta = 0;
+      this.stock = 0;
       this.descripcion = "";
       this.editedIndex = -1;
     },
@@ -266,12 +299,12 @@ export default {
             nombre: me.nombre,
             descripcion: me.descripcion,
           })
-          .then(function(res) {
+          .then(function (res) {
             me.close();
             me.listar();
             me.limpiar();
           })
-          .catch(function(err) {
+          .catch(function (err) {
             console.log(err);
           });
       } else {
@@ -282,12 +315,12 @@ export default {
             nombre: me.nombre,
             descripcion: me.descripcion,
           })
-          .then(function(res) {
+          .then(function (res) {
             me.close();
             me.listar();
             me.limpiar();
           })
-          .catch(function(err) {
+          .catch(function (err) {
             console.log(err);
           });
       }
