@@ -142,7 +142,7 @@ export default {
         sortable: true,
         value: "nombre",
       },
-      { text: "Description", value: "descripcion" },
+      { text: "Description", value: "descripcion" , sortable: false },
       { text: "Status", value: "condicion" },
       { text: "Actions", value: "actions", sortable: false },
     ],
