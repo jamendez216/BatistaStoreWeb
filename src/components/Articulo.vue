@@ -51,11 +51,13 @@
                             label="Code"
                             :counter="50"
                             required
+                            :rules="codeRules"
                           ></v-text-field>
                         </v-col>
                         <v-col cols="8" sm="8" md="8">
                           <v-select v-model="idcategoria"
-                          :items="categorias" label="Category">
+                          :items="categorias" label="Category"
+                          :rules="categoryRules">
                           </v-select>
                         </v-col>
                         
@@ -74,6 +76,7 @@
                             type="number"
                             v-model="stock"
                             label="Stock"
+                            :rules="stockRules"
                           ></v-text-field>
                         </v-col>
                        <v-col cols="5" sm="5" md="5">
@@ -154,6 +157,7 @@ import axios from "axios";
 export default {
   data: () => ({
     articulos: [],
+    categorias: [],
     search: "",
     valid: true,
     loading: true,
@@ -171,10 +175,6 @@ export default {
     editedIndex: -1,
     id: "",
     idcategoria:'',
-    categorias:[
-      {text: 'categoria 1', value: 1},
-      {text: 'categoria 2', value: 2}
-    ],
     codigo: '',
     nombre: "",
     stock: 0,
@@ -184,6 +184,15 @@ export default {
       (v) => !!v || "Name is required",
       (v) => v.length <= 50 || "Name must be less than 50 characters",
       (v) => v.length >= 3 || "Name must contain at least 3 characters",
+    ],
+    categoryRules:[
+      (v) => !!v || "Category is required"
+    ],
+    codeRules:[
+      (v) => !!v || "Code is required"
+    ],
+    stockRules:[
+      (v) => v >= 0 || "Stock must be greater than 0"
     ],
     adModal: 0,
     adNombre: "",
@@ -209,6 +218,7 @@ export default {
   created() {
     this.initialize();
     this.listar();
+    this.ValueList();
   },
 
   methods: {
@@ -227,9 +237,27 @@ export default {
         });
     },
 
+    ValueList() {
+      let me = this;
+      var catArray = [];
+      axios
+        .get("Categorias/GetValList")
+        .then(function (response) {
+          
+          catArray = response.data;
+          catArray.map(function (x) {
+              me.categorias.push({text: x.item2, value: x.item1});
+          });
+        })
+        .catch(function (error) {
+          console.log(error);
+        });
+    },
+
     initialize() {},
 
     editItem(item) {
+      this.idarticulo = item.idarticulo;
       this.codigo = item.codigo;
       this.idcategoria = item.idcategoria;
       this.nombre = item.nombre;
@@ -242,7 +270,7 @@ export default {
     ToggleStatus(accion, item) {
       this.adModal = 1;
       this.adNombre = item.nombre;
-      this.adID = item.categoriaID;
+      this.adID = item.idarticulo;
       this.dialogDelete = true;
       if (accion === 1) {
         this.adAccion = 1;
@@ -255,8 +283,9 @@ export default {
 
     deleteItemConfirm() {
       let me = this;
+      console.log(this);
       axios
-        .post("Categorias/ToggleActivation/" + this.adID, {})
+        .post("Articulos/ToggleActivation/" + this.adID, {})
         .then(function (res) {
           me.adModal = 0;
           me.adAccion = 0;
@@ -274,6 +303,7 @@ export default {
       this.limpiar();
     },
     limpiar() {
+      this.idarticulo = "";
       this.codigo = "";
       this.idcategoria = "";
       this.nombre = "";
@@ -294,10 +324,14 @@ export default {
       if (this.editedIndex > -1) {
         let me = this;
         axios
-          .put("Categorias/Edit", {
-            idcategoria: me.id,
+          .put("Articulos/Edit", {
+            idarticulo: me.idarticulo,
+            codigo: me.codigo,
+            idcategoria: me.idcategoria,
             nombre: me.nombre,
-            descripcion: me.descripcion,
+            precio_venta: me.precio_venta,
+            stock: me.stock,
+            descripcion: me.descripcion
           })
           .then(function (res) {
             me.close();
@@ -311,9 +345,13 @@ export default {
         //Agregar
         let me = this;
         axios
-          .post("Categorias/Create", {
+          .post("Articulos/Create", {
+            codigo : me.codigo,
+            idcategoria: me.idcategoria,
             nombre: me.nombre,
-            descripcion: me.descripcion,
+            precio_venta: me.precio_venta,
+            stock: me.stock,
+            descripcion: me.descripcion
           })
           .then(function (res) {
             me.close();
