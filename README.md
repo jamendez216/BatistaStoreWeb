@@ -1,6 +1,9 @@
 # BatistaStoreWeb
 Front end of the system, made with Vue.js using Vuetify 
 
+## Back-end project
+https://github.com/jamendez216/BatistaStoreBackEnd 
+
 ## Project setup
 ```
 npm install
