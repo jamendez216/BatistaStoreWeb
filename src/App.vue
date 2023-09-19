@@ -43,7 +43,7 @@
 
     <v-app-bar app clipped-left fixed color="secondary">
       <v-app-bar-nav-icon @click="drawer = !drawer"></v-app-bar-nav-icon>
-      <v-toolbar-title><h2>Inventario Batista</h2></v-toolbar-title>
+      <v-toolbar-title><h2>Inventory Admin</h2></v-toolbar-title>
     </v-app-bar>
 
     <v-main>

@@ -246,7 +246,7 @@ export default {
           
           catArray = response.data;
           catArray.map(function (x) {
-              me.categorias.push({text: x.item2, value: x.item1});
+              me.categorias.push({text: x.name, value: x.id});
           });
         })
         .catch(function (error) {
@@ -323,6 +323,7 @@ export default {
       }
       if (this.editedIndex > -1) {
         let me = this;
+        console.log(me.precio_venta)
         axios
           .put("Articulos/Edit", {
             idarticulo: me.idarticulo,
