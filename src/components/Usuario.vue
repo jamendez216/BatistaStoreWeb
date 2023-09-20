@@ -44,47 +44,76 @@
                   <v-card-text>
                     <v-container>
                       <v-row>
-                        <v-col cols="4" sm="4" md="4">
-                          <v-text-field
-                            v-model="codigo"
-                            label="Code"
-                            :counter="50"
-                            required
-                            :rules="codeRules"
-                          ></v-text-field>
-                        </v-col>
                         <v-col cols="8" sm="8" md="8">
-                          <v-select v-model="idcategoria"
-                          :items="categorias" label="Category"
-                          :rules="categoryRules">
-                          </v-select>
-                        </v-col>
-                        
-                        <v-col cols="12" sm="12" md="12">
                           <v-text-field
                             v-model="nombre"
                             label="Name"
-                            :counter="50"
+                            :counter="100"
+                            required
                             :rules="nameRules"
+                          ></v-text-field>
+                        </v-col>
+                        <v-col cols="4" sm="4" md="4">
+                          <v-select v-model="idrol"
+                          :items="roles" label="Role"
+                          :rules="roleRules">
+                          </v-select>
+                        </v-col>
+
+                        <v-col cols="4" sm="4" md="4">
+                          <v-select v-model="documentType"
+                          :items="documents" label="ID Type"
+                          :rules="documentRules">
+                          </v-select>
+                        </v-col>
+                        
+                        <v-col cols="4" sm="4" md="4">
+                          <v-text-field
+                            v-model="documentNum"
+                            label="ID Number"
+                            :rules="documentNumberRules"
+                          ></v-text-field>
+                        </v-col>
+
+                        <v-col cols="3" sm="3" md="3">
+                          <v-text-field
+                            v-model="phone"
+                            label="Phone Number"
+                            :rules="phoneRules"
+                          ></v-text-field>
+                        </v-col>
+
+                        <v-col cols="6" sm="6" md="6">
+                          <v-text-field
+                            v-model="email"
+                            label="e-mail"
+                            :counter="30"
+                            :rules="emailRules"
                             required
                           ></v-text-field>
                         </v-col>
-                        
-                        <v-col cols="5" sm="5" md="5">
+
+                        <v-col cols="6" sm="6" md="6">
                           <v-text-field
-                            type="number"
-                            v-model="stock"
-                            label="Stock"
-                            :rules="stockRules"
+                            type="password"
+                            v-model="password"
+                            label="Password"
+                            :counter="30"
+                            :rules="passwordRules"
+                            required
                           ></v-text-field>
                         </v-col>
-                       <v-col cols="5" sm="5" md="5">
+
+                        <v-col cols="12" sm="12" md="12">
                           <v-text-field
-                            type="number"
-                            v-model="precio_venta"
-                            label="Unit Price"
+                            v-model="address"
+                            label="Address"
+                            :counter="150"
+                            :rules="addressRules"
+                            required
                           ></v-text-field>
                         </v-col>
+
                       </v-row>
                     </v-container>
                   </v-card-text>
@@ -156,7 +185,6 @@ import axios from "axios";
 export default {
   data: () => ({
     usuarios: [],
-    categorias: [],
     search: "",
     valid: true,
     loading: true,
@@ -175,25 +203,55 @@ export default {
     ],
     editedIndex: -1,
     id: "",
-    idcategoria:'',
-    codigo: '',
-    nombre: "",
-    stock: 0,
-    precio_venta:0,
-    descripcion: "",
+    idrol:'',
+    nombre: '',
+    roles:[
+    ],
+    documentType:'',
+    documents:[
+      'Cedula',
+      'Pasaporte',
+      'RUC',
+      'DNI'
+    ],
+    documentNum: '',
+    address: '',
+    phone:'',
+    email: '',
+    password: '',
+    passwordUpdate: false,
+    passwordOld: '',
     nameRules: [
       (v) => !!v || "Name is required",
-      (v) => v.length <= 50 || "Name must be less than 50 characters",
+      (v) => v.length <= 100 || "Name must be less than 100 characters",
       (v) => v.length >= 3 || "Name must contain at least 3 characters",
     ],
-    categoryRules:[
-      (v) => !!v || "Category is required"
+    roleRules:[
+      (v) => !!v || "Role is required"
     ],
-    codeRules:[
-      (v) => !!v || "Code is required"
+    phoneRules:[
+      (v) => !!v || "Phone is required",
+      (v) => v.length >= 7 || "Phone must have more than 7 characters"
     ],
-    stockRules:[
-      (v) => v >= 0 || "Stock must be greater than 0"
+    emailRules:[
+      (v) => !!v || "e-mail is required",
+      (v) => v.length <= 30 || "e-mail must have less than 30 characters"
+    ],
+    documentRules:[
+      (v) => !!v || "Document type is required"
+    ],
+    documentNumberRules:[
+      (v) => !!v || "ID number is required",
+      (v) => v.length >= 6 || "ID must have more than 6 characters"
+    ],
+    addressRules: [
+      (v) => !!v || "Address is required",
+      (v) => v.length <= 150 || "Address must be less than 150 characters",
+    ],    
+    passwordRules: [
+      (v) => !!v || "Password is required",
+      (v) => v.length <= 30 || "Password must be less than 30 characters",
+      (v) => v.length >= 7 || "Password must contain at least 7 characters",
     ],
     adModal: 0,
     adNombre: "",
@@ -203,7 +261,7 @@ export default {
 
   computed: {
     formTitle() {
-      return this.editedIndex === -1 ? "Create Product" : "Edit Product";
+      return this.editedIndex === -1 ? "Create User" : "Edit User";
     },
   },
 
@@ -240,14 +298,13 @@ export default {
 
     ValueList() {
       let me = this;
-      var catArray = [];
+      var rolesArray = [];
       axios
-        .get("Categorias/GetValList")
+        .get("Roles/GetValList")
         .then(function (response) {
-          
-          catArray = response.data;
-          catArray.map(function (x) {
-              me.categorias.push({text: x.item2, value: x.item1});
+          rolesArray = response.data;
+          rolesArray.map(function (x) {
+              me.roles.push({text: x.nombre, value: x.idrol});
           });
         })
         .catch(function (error) {
@@ -258,12 +315,16 @@ export default {
     initialize() {},
 
     editItem(item) {
-      this.idarticulo = item.idarticulo;
-      this.codigo = item.codigo;
-      this.idcategoria = item.idcategoria;
+      this.id = item.idusuario;
+      this.idrol = item.idrol;
       this.nombre = item.nombre;
-      this.stock = item.stock;
-      this.precio_venta = item.precio_venta;
+      this.email = item.email;
+      this.phone = item.telefono;
+      this.documentNum = item.num_documento;
+      this.documentType = item.tipo_documento;
+      this.address = item.direccion;
+      this.password = item.password_hash
+      this.passwordOld = item.password_hash
       this.editedIndex = 1;
       this.dialog = true;
     },
@@ -271,7 +332,7 @@ export default {
     ToggleStatus(accion, item) {
       this.adModal = 1;
       this.adNombre = item.nombre;
-      this.adID = item.idarticulo;
+      this.adID = item.idusuario;
       this.dialogDelete = true;
       if (accion === 1) {
         this.adAccion = 1;
@@ -286,7 +347,7 @@ export default {
       let me = this;
       console.log(this);
       axios
-        .post("Articulos/ToggleActivation/" + this.adID, {})
+        .post("Usuarios/ToggleActivation/" + this.adID, {})
         .then(function (res) {
           me.adModal = 0;
           me.adAccion = 0;
@@ -304,13 +365,16 @@ export default {
       this.limpiar();
     },
     limpiar() {
-      this.idarticulo = "";
-      this.codigo = "";
-      this.idcategoria = "";
+      this.idrol = "";
       this.nombre = "";
-      this.precio_venta = 0;
-      this.stock = 0;
-      this.descripcion = "";
+      this.documentType = "";
+      this.documentNum = "";
+      this.address = "";
+      this.phone = "";
+      this.email = "";
+      this.password = "";
+      this.passwordOld = "";
+      this.passwdUpdate = false;
       this.editedIndex = -1;
     },
     close() {
@@ -324,15 +388,22 @@ export default {
       }
       if (this.editedIndex > -1) {
         let me = this;
+        if(me.password != me.passwordOld)
+        {
+          me.passwordUpdate = true;
+        }
         axios
-          .put("Articulos/Edit", {
-            idarticulo: me.idarticulo,
-            codigo: me.codigo,
-            idcategoria: me.idcategoria,
+          .put("Usuarios/Edit", {
+            idusuario : me.id,
+            idrol: me.idrol,
             nombre: me.nombre,
-            precio_venta: me.precio_venta,
-            stock: me.stock,
-            descripcion: me.descripcion
+            tipo_documento: me.documentType,
+            num_documento: me.documentNum,
+            direccion: me.address,
+            telefono: me.phone,
+            email: me.email,
+            password: me.password,
+            act_password : me.passwordUpdate
           })
           .then(function (res) {
             me.close();
@@ -346,13 +417,15 @@ export default {
         //Agregar
         let me = this;
         axios
-          .post("Articulos/Create", {
-            codigo : me.codigo,
-            idcategoria: me.idcategoria,
+          .post("Usuarios/Create", {
+            idrol: me.idrol,
             nombre: me.nombre,
-            precio_venta: me.precio_venta,
-            stock: me.stock,
-            descripcion: me.descripcion
+            tipo_documento: me.documentType,
+            num_documento: me.documentNum,
+            direccion: me.address,
+            telefono: me.phone,
+            email: me.email,
+            password: me.password
           })
           .then(function (res) {
             me.close();
