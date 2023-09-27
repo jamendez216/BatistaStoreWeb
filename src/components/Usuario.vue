@@ -289,7 +289,6 @@ export default {
         .then(function (response) {
           me.usuarios = response.data;
           me.loading = false;
-          //console.log(response);
         })
         .catch(function (error) {
           console.log(error);
@@ -345,7 +344,6 @@ export default {
 
     deleteItemConfirm() {
       let me = this;
-      console.log(this);
       axios
         .post("Usuarios/ToggleActivation/" + this.adID, {})
         .then(function (res) {
